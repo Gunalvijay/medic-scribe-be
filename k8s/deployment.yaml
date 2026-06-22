@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soap-generation-service
+  labels:
+    app: soap-generation-service
+    team: team-3
+spec:
+  # NOTE: replicas is intentionally omitted here / managed by the HPA below.
+  # If you apply this manifest standalone, k8s defaults to 1 and the HPA
+  # takes over control immediately after.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: soap-generation-service
+  template:
+    metadata:
+      labels:
+        app: soap-generation-service
+    spec:
+      containers:
+        - name: soap-generation-service
+          image: your-registry/soap-generation-service:latest
+          ports:
+            - containerPort: 8080
+              name: health
+            - containerPort: 9100
+              name: metrics
+          envFrom:
+            - configMapRef:
+                name: soap-generation-config
+          resources:
+            # Requests/limits drive the CPU-based HPA metric below.
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1500m"
+              memory: "1Gi"
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          # Give the consumer time to commit offsets and finish in-flight
+          # work before the pod is killed during a scale-down.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "10"]
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: soap-generation-service
+  labels:
+    app: soap-generation-service
+spec:
+  selector:
+    app: soap-generation-service
+  ports:
+    - name: health
+      port: 8080
+      targetPort: 8080
+    - name: metrics
+      port: 9100
+      targetPort: 9100
