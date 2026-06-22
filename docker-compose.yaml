@@ -60,9 +60,9 @@ services:
       MEDGEMMA_MODEL: medgemma:latest
       LLM_TIMEOUT_SECONDS: "300"
       WORKER_POOL_SIZE: "4"
-    ports:
-      - "8080:8080"
-      - "9100:9100"
+    expose:
+      - "8080"
+      - "9100"
     deploy:
       replicas: 2   # simulates multiple pods sharing the consumer group locally
 
