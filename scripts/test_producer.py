@@ -31,7 +31,7 @@ async def main():
     )
     await producer.start()
     try:
-        for i in range(5):
+        for i in range(10, 31):
             message = {"transcript_id": f"test-{i}", "transcript": SAMPLE_TRANSCRIPT}
             await producer.send_and_wait("transcript-topic", value=message)
             print(f"Published transcript-{i}")

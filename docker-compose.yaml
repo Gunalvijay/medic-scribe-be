@@ -59,12 +59,12 @@ services:
       OLLAMA_HOST: http://ollama:11434
       MEDGEMMA_MODEL: medgemma:latest
       LLM_TIMEOUT_SECONDS: "300"
-      WORKER_POOL_SIZE: "4"
+      WORKER_POOL_SIZE: "2"
     expose:
       - "8080"
       - "9100"
-    deploy:
-      replicas: 2   # simulates multiple pods sharing the consumer group locally
+    # deploy:
+    #   replicas: 2
 
 volumes:
   ollama-data:
